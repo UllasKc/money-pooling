@@ -182,12 +182,12 @@ def upload_transactions():
 
             df = pd.read_csv(uploaded_file)
 
-            actual_columns = ['User', 'Type', 'Pool Amount', 'Transaction', 'Vishwas', 'Ullas',
-
-                                    'Shashi', 'Uppi', 'Comments']
+            actual_columns = ['User', 'Type', 'Pool Amount', 'Transaction', 'Vishwas', 'Ullas', 'Shashi', 'Uppi', 'Comments']
 
             if df.columns.tolist() == actual_columns:
-
+                df[['Pool Amount', 'Transaction']] = df[['Pool Amount', 'Transaction']].astype(int)
+                df[[ 'Vishwas', 'Ullas', 'Shashi', 'Uppi']] = df[['Vishwas', 'Ullas', 'Shashi', 'Uppi']].astype(float)
+             
                 df = df.fillna("Null")
 
                 df = df.to_dict(orient='records')
