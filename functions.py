@@ -41,7 +41,7 @@ def use_money(names, amount,date,comment="No Comments"):
             
         for name in names:
             st.session_state.friend_balance[name] -= individual_amount_used
-            st.success(f"Rs.{individual_amount_used:.2f} used by {', '.join(names)}.")
+            st.success(f"Rs.{individual_amount_used:.2f} used by {name}.")
 
         current_transaction = { "User" : st.session_state.email.capitalize(),
                                 "Type":"Use Money",
