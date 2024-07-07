@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import datetime
 registered_admin_users = ["ullas"]
-registered_non_admin_users = ["vishwas","shashi","uppi"]
+registered_non_admin_users = ["vishwas","sahana","shashi","uppi"]
 
 def add_to_pool(names, amount, date,comment="No Comments"):
     for name in names:
