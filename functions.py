@@ -18,6 +18,7 @@ def add_to_pool(names, amount, date,comment="No Comments"):
                             "Pool Amount":st.session_state.pool_amount,
                             "Transaction":"+"+str(amount*len(names)),
                             'Vishwas': st.session_state.friend_balance["Vishwas"], 
+                           'Sahana': st.session_state.friend_balance['Sahana'],
                             'Ullas': st.session_state.friend_balance['Ullas'],
                             'Shashi': st.session_state.friend_balance["Shashi"],
                             'Uppi': st.session_state.friend_balance["Uppi"],
@@ -48,6 +49,7 @@ def use_money(names, amount,date,comment="No Comments"):
                                 "Pool Amount":st.session_state.pool_amount,
                                 "Transaction":"-"+str(amount),
                                 'Vishwas': st.session_state.friend_balance["Vishwas"], 
+                               'Sahana': st.session_state.friend_balance['Sahana'],
                                 'Ullas': st.session_state.friend_balance['Ullas'],
                                 'Shashi': st.session_state.friend_balance["Shashi"],
                                 'Uppi': st.session_state.friend_balance["Uppi"],
@@ -72,17 +74,19 @@ def initialize():
         data =  transactions[-1]  
         pool_amount = data["Pool Amount"]
         Vishwas =  data["Vishwas"]
+        Sahana =  data["Sahana"]
         Ullas = data["Ullas"]
         Shashi = data["Shashi"]
         Uppi =  data["Uppi"]
     else:
         pool_amount = 0
         Vishwas =  0
+        Sahana = 0
         Ullas = 0
         Shashi = 0
         Uppi = 0
     st.session_state.pool_amount = pool_amount
-    st.session_state.friend_balance = {'Vishwas': Vishwas, 'Ullas': Ullas, 
+    st.session_state.friend_balance = {'Vishwas': Vishwas,'Sahana':Sahana, 'Ullas': Ullas, 
                                     'Shashi': Shashi, 'Uppi': Uppi}
     
 
@@ -93,11 +97,11 @@ def upload_transactions():
     try:
         if uploaded_file is not None:
             df = pd.read_csv(uploaded_file)
-            actual_columns = ['User', 'Type', 'Pool Amount', 'Transaction', 'Vishwas', 'Ullas',
+            actual_columns = ['User', 'Type', 'Pool Amount', 'Transaction', 'Vishwas','Sahana', 'Ullas',
                                     'Shashi', 'Uppi','Date', 'Comments']
             if df.columns.tolist() == actual_columns:
                 df[['Pool Amount', 'Transaction']] = df[['Pool Amount', 'Transaction']].astype(int)
-                df[['Vishwas', 'Ullas','Shashi', 'Uppi']] = df[['Vishwas', 'Ullas','Shashi', 'Uppi']].astype(float)
+                df[['Vishwas','Sahana', 'Ullas','Shashi', 'Uppi']] = df[['Vishwas','Sahana', 'Ullas','Shashi', 'Uppi']].astype(float)
                 df[['Date']] = df[['Date']].astype(str)
                 df = df.fillna("Null")
                 df = df.to_dict(orient='records')
@@ -187,7 +191,7 @@ def main():
     option = st.sidebar.selectbox("Choose an action:", ["Add Money to Pool", "Use Money from Pool","Transactions"])
 
     if option == "Add Money to Pool":
-        names = st.sidebar.multiselect("Select friends to add money:", ['Vishwas', 'Ullas', 'Shashi', 'Uppi'], default=['Ullas'])
+        names = st.sidebar.multiselect("Select friends to add money:", ['Vishwas','Sahana', 'Ullas', 'Shashi', 'Uppi'], default=['Ullas'])
         amount = st.sidebar.number_input("Enter amount to add to selected friends:", min_value=10, step=500)
         date = st.sidebar.date_input("Enter recharge date:", value="default_value_today",format="DD/MM/YYYY")
         comment = st.sidebar.text_input(placeholder="Enter comments",label="Enter Comments")
@@ -196,7 +200,7 @@ def main():
         display_balance()
 
     elif option == "Use Money from Pool":
-        names = st.sidebar.multiselect("Select friends who used the money:", ['Vishwas', 'Ullas', 'Shashi', 'Uppi'], default=['Ullas'])
+        names = st.sidebar.multiselect("Select friends who used the money:", ['Vishwas','Sahana', 'Ullas', 'Shashi', 'Uppi'], default=['Ullas'])
         amount = st.sidebar.number_input("Enter amount used by selected friends:", min_value=10, step=500)
         date = st.sidebar.date_input("Enter match played date:", value="default_value_today",format="DD/MM/YYYY")
         comment = st.sidebar.text_input(placeholder="Enter comments",label="Enter Comments")
