@@ -4,8 +4,13 @@ import bcrypt
 import os
 import pandas as pd
 import datetime
+from collections import OrderedDict
+
+
+
 registered_admin_users = ["ullas"]
-registered_non_admin_users = ["vishwas","sahana","shashi","uppi","prathiksha"]
+registered_non_admin_users = ["vishwas","sahana","shashi","uppi","prathiksha","bharat"]
+all_users = registered_admin_users+registered_non_admin_users
 
 def add_to_pool(names, amount, date,comment="No Comments"):
     for name in names:
@@ -13,18 +18,20 @@ def add_to_pool(names, amount, date,comment="No Comments"):
         st.session_state.friend_balance[name] += amount
         st.success(f"Added Rs.{amount:.2f} to {name}'s balance.")
 
-    current_transaction = { "User" : st.session_state.email.capitalize(),
-                            "Type":"Add Money",
-                            "Pool Amount":st.session_state.pool_amount,
-                            "Transaction":"+"+str(amount*len(names)),
-                            'Vishwas': st.session_state.friend_balance["Vishwas"], 
-                           'Sahana': st.session_state.friend_balance['Sahana'],
-                            'Ullas': st.session_state.friend_balance['Ullas'],
-                            'Shashi': st.session_state.friend_balance["Shashi"],
-                            'Uppi': st.session_state.friend_balance["Uppi"],
-                            'Prathiksha':st.session_state.friend_balance["Prathiksha"], 
-                            'Date': str(date),
-                            'Comments':comment}
+    # Initialize the OrderedDict to preserve the order
+    current_transaction = OrderedDict({
+        "User": st.session_state.email.capitalize(),
+        "Type": "Add Money",
+        "Pool Amount": st.session_state.pool_amount,
+        "Transaction": "+" + str(amount * len(names))})
+
+    # Dynamically add the balances for each non-admin user in the given order
+    for user in all_users:
+        current_transaction[user.capitalize()] = st.session_state.friend_balance[user.capitalize()]
+
+    # Add comments after the user balances
+    current_transaction["Date"] = str(date)
+    current_transaction["Comments"] = comment
 
     #Read
     with open("data.json", "r") as f:
@@ -44,20 +51,22 @@ def use_money(names, amount,date,comment="No Comments"):
         for name in names:
             st.session_state.friend_balance[name] -= individual_amount_used
             st.success(f"Rs.{individual_amount_used:.2f} used by {name}.")
-
-        current_transaction = { "User" : st.session_state.email.capitalize(),
-                                "Type":"Use Money",
-                                "Pool Amount":st.session_state.pool_amount,
-                                "Transaction":"-"+str(amount),
-                                'Vishwas': st.session_state.friend_balance["Vishwas"], 
-                               'Sahana': st.session_state.friend_balance['Sahana'],
-                                'Ullas': st.session_state.friend_balance['Ullas'],
-                                'Shashi': st.session_state.friend_balance["Shashi"],
-                                'Uppi': st.session_state.friend_balance["Uppi"],
-                               'Prathiksha':st.session_state.friend_balance["Prathiksha"],
-                                'Date': str(date),
-                                'Comments':comment}
         
+        # Initialize the OrderedDict to preserve the order
+        current_transaction = OrderedDict({
+            "User": st.session_state.email.capitalize(),
+            "Type": "Use Money",
+            "Pool Amount": st.session_state.pool_amount,
+            "Transaction": "+" + str(amount * len(names))})
+
+        # Dynamically add the balances for each non-admin user in the given order
+        for user in all_users:
+            current_transaction[user.capitalize()] = st.session_state.friend_balance[user.capitalize()]
+
+        # Add comments after the user balances
+        current_transaction["Date"] = str(date)
+        current_transaction["Comments"] = comment
+            
         #Read
         with open("data.json", "r") as f:
             transactions = json.load(f)
@@ -69,30 +78,32 @@ def use_money(names, amount,date,comment="No Comments"):
     else:
         st.error("Not enough money in the pool.")
 
+
 def initialize():
     with open("data.json", "r") as f:
         transactions = json.load(f)
-    if transactions:
-        data =  transactions[-1]  
-        pool_amount = data["Pool Amount"]
-        Vishwas =  data["Vishwas"]
-        Sahana =  data["Sahana"]
-        Ullas = data["Ullas"]
-        Shashi = data["Shashi"]
-        Uppi =  data["Uppi"]
-        Prathiksha=data["Prathiksha"]
-    else:
-        pool_amount = 0
-        Vishwas =  0
-        Sahana = 0
-        Ullas = 0
-        Shashi = 0
-        Uppi = 0
-        Prathiksha=0
-    st.session_state.pool_amount = pool_amount
-    st.session_state.friend_balance = {'Vishwas': Vishwas,'Sahana':Sahana, 'Ullas': Ullas, 
-                                    'Shashi': Shashi, 'Uppi': Uppi,'Prathiksha':Prathiksha}
     
+    # Initialize balances and pool amount
+    pool_amount = 0
+    friend_balance = {}
+
+    if transactions:
+        data = transactions[-1]  # Get the last transaction
+        pool_amount = data.get("Pool Amount", 0)
+
+        # Dynamically assign values for each registered user
+        for user in all_users:
+            friend_balance[user.capitalize()] = data.get(user.capitalize(), 0)
+    
+    else:
+        # If no transactions exist, initialize all balances to 0
+        for user in all_users:
+            friend_balance[user.capitalize()] = 0
+
+    # Update session state
+    st.session_state.pool_amount = pool_amount
+    st.session_state.friend_balance = friend_balance
+
 
 # Function to display transactions
 def upload_transactions():
@@ -100,12 +111,19 @@ def upload_transactions():
     uploaded_file = st.file_uploader("Choose your transcation file")
     try:
         if uploaded_file is not None:
-            df = pd.read_csv(uploaded_file)
-            actual_columns = ['User', 'Type', 'Pool Amount', 'Transaction', 'Vishwas','Sahana', 'Ullas',
-                                    'Shashi', 'Uppi','Prathiksha','Date', 'Comments']
+            df = pd.read_csv(uploaded_file)            
+            # Define initial and final columns
+            initial_columns = ['User', 'Type', 'Pool Amount', 'Transaction']
+            final_columns = ['Date', 'Comments']
+
+            # Create the actual_columns list dynamically
+            actual_columns = initial_columns + [user.capitalize() for user in all_users] + final_columns
+
             if df.columns.tolist() == actual_columns:
                 df[['Pool Amount', 'Transaction']] = df[['Pool Amount', 'Transaction']].astype(int)
-                df[['Vishwas','Sahana', 'Ullas','Shashi', 'Uppi','Prathiksha']] = df[['Vishwas','Sahana', 'Ullas','Shashi', 'Uppi','Prathiksha']].astype(float)
+
+                all_users_capitalize = [user.capitalize() for user in all_users]
+                df[all_users_capitalize] = df[all_users_capitalize].astype(float)
                 df[['Date']] = df[['Date']].astype(str)
                 df = df.fillna("Null")
                 df = df.to_dict(orient='records')
@@ -195,7 +213,8 @@ def main():
     option = st.sidebar.selectbox("Choose an action:", ["Add Money to Pool", "Use Money from Pool","Transactions"])
 
     if option == "Add Money to Pool":
-        names = st.sidebar.multiselect("Select friends to add money:", ['Vishwas','Sahana', 'Ullas', 'Shashi', 'Uppi','Prathiksha'], default=['Ullas'])
+        all_users_capitalize = [user.capitalize() for user in all_users]
+        names = st.sidebar.multiselect("Select friends to add money:", all_users_capitalize, default=['Ullas'])
         amount = st.sidebar.number_input("Enter amount to add to selected friends:", min_value=10, step=500)
         date = st.sidebar.date_input("Enter recharge date:", value="default_value_today",format="DD/MM/YYYY")
         comment = st.sidebar.text_input(placeholder="Enter comments",label="Enter Comments")
@@ -204,7 +223,7 @@ def main():
         display_balance()
 
     elif option == "Use Money from Pool":
-        names = st.sidebar.multiselect("Select friends who used the money:", ['Vishwas','Sahana', 'Ullas', 'Shashi', 'Uppi','Prathiksha'], default=['Ullas'])
+        names = st.sidebar.multiselect("Select friends who used the money:", all_users_capitalize, default=['Ullas'])
         amount = st.sidebar.number_input("Enter amount used by selected friends:", min_value=10, step=500)
         date = st.sidebar.date_input("Enter match played date:", value="default_value_today",format="DD/MM/YYYY")
         comment = st.sidebar.text_input(placeholder="Enter comments",label="Enter Comments")
