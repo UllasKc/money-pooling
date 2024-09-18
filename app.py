@@ -10,7 +10,7 @@ if json_file_exists("data.json") == False:
     with open("data.json", "w") as f:
         json.dump([], f)
 
-st.title("Friends Money Pool")
+st.title("Friends Money Pool - Badminators")
 # Create an empty container
 placeholder = st.empty()
 
