@@ -223,6 +223,7 @@ def main():
         display_balance()
 
     elif option == "Use Money from Pool":
+        all_users_capitalize = [user.capitalize() for user in all_users]
         names = st.sidebar.multiselect("Select friends who used the money:", all_users_capitalize, default=['Ullas'])
         amount = st.sidebar.number_input("Enter amount used by selected friends:", min_value=10, step=500)
         date = st.sidebar.date_input("Enter match played date:", value="default_value_today",format="DD/MM/YYYY")
