@@ -57,7 +57,7 @@ def use_money(names, amount,date,comment="No Comments"):
             "User": st.session_state.email.capitalize(),
             "Type": "Use Money",
             "Pool Amount": st.session_state.pool_amount,
-            "Transaction": "+" + str(amount * len(names))})
+            "Transaction": "-"+str(amount)})
 
         # Dynamically add the balances for each non-admin user in the given order
         for user in all_users:
@@ -131,6 +131,7 @@ def upload_transactions():
                     json.dump(df, f)
                 initialize()
             else:
+                print(actual_columns,df.columns.to_list(),'abc')
                 st.error("Upload the correct transactions file")
     except:
         st.error("corrupt transactions file")
