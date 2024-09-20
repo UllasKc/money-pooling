@@ -216,7 +216,7 @@ def main():
     if option == "Add Money to Pool":
         all_users_capitalize = [user.capitalize() for user in all_users]
         names = st.sidebar.multiselect("Select friends to add money:", all_users_capitalize, default=['Ullas'])
-        amount = st.sidebar.number_input("Enter amount to add to selected friends:", min_value=10, step=500)
+        amount = st.sidebar.number_input("Enter amount to add to selected friends:", min_value=1, step=500,value=500)
         date = st.sidebar.date_input("Enter recharge date:", value="default_value_today",format="DD/MM/YYYY")
         comment = st.sidebar.text_input(placeholder="Enter comments",label="Enter Comments")
         if st.sidebar.button("Add"):
@@ -226,7 +226,7 @@ def main():
     elif option == "Use Money from Pool":
         all_users_capitalize = [user.capitalize() for user in all_users]
         names = st.sidebar.multiselect("Select friends who used the money:", all_users_capitalize, default=['Ullas'])
-        amount = st.sidebar.number_input("Enter amount used by selected friends:", min_value=10, step=500)
+        amount = st.sidebar.number_input("Enter amount used by selected friends:", min_value=1, step=240,value=240)
         date = st.sidebar.date_input("Enter match played date:", value="default_value_today",format="DD/MM/YYYY")
         comment = st.sidebar.text_input(placeholder="Enter comments",label="Enter Comments")
         if st.sidebar.button("Use"):
